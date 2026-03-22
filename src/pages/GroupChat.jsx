@@ -46,7 +46,6 @@ export default function GroupChat() {
         table: 'messages',
       }, (payload) => {
         setMessages(prev => {
-          // avoid duplicate if already added optimistically
           if (prev.find(m => m.id === payload.new.id)) return prev;
           return [...prev, payload.new];
         });
@@ -121,126 +120,153 @@ export default function GroupChat() {
   const isDisabled = sending || cooldown > 0;
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
+    <div className="page-wrapper">
       <Navbar />
+      
+      <div className="chat-wrapper">
+        <div className="chat-container">
+          <div className="chat-bg" />
 
-      {/* Chat area */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', maxWidth: 720, width: '100%', margin: '0 auto', padding: '0 16px' }}>
-        {/* Header */}
-        <div style={{
-          padding: '16px 0 12px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          borderBottom: '1px solid var(--border)',
-        }}>
-          <div>
-            <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>Group Chat</h2>
-            <p style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Open to everyone</p>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-secondary)' }}>
-            <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#4DB89E', display: 'inline-block' }} />
-            <span>{onlineCount} online</span>
-          </div>
-        </div>
-
-        {/* Messages */}
-        <div style={{
-          flex: 1,
-          overflowY: 'auto',
-          padding: '20px 0',
-          display: 'flex',
-          flexDirection: 'column',
-          minHeight: 0,
-          maxHeight: 'calc(100vh - 220px)',
-        }}>
-          {messages.length === 0 && (
-            <div style={{ textAlign: 'center', color: 'var(--text-secondary)', fontSize: 14, paddingTop: 48 }}>
-              No messages yet. Say hello! 👋
-            </div>
-          )}
-          {messages.map(msg => (
-            <MessageBubble
-              key={msg.id}
-              message={msg}
-              isOwn={msg.user_id === session?.user?.id}
-            />
-          ))}
-          <div ref={bottomRef} />
-        </div>
-
-        {/* Input area */}
-        <div style={{ paddingBottom: 20 }}>
-          {/* Cooldown progress bar */}
+          {/* Header */}
           <div style={{
-            height: 2,
-            background: 'var(--border)',
-            borderRadius: 2,
-            marginBottom: 8,
-            overflow: 'hidden',
+            padding: '12px 16px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            background: '#ffffff',
+            borderBottom: '1px solid var(--border)',
+            zIndex: 10,
           }}>
-            <div style={{
-              height: '100%',
-              width: `${cooldownProgress}%`,
-              background: cooldown > 0 ? 'var(--accent)' : 'transparent',
-              borderRadius: 2,
-              transition: cooldown > 0 ? 'width 1s linear' : 'none',
-            }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ 
+                width: 44, height: 44, borderRadius: '50%', backgroundColor: 'var(--accent)', 
+                display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 20
+              }}>
+                🌍
+              </div>
+              <div>
+                <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>Global Lobby</h2>
+                <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+                  {onlineCount} {onlineCount === 1 ? 'participant' : 'participants'} online
+                </p>
+              </div>
+            </div>
           </div>
 
-          <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end' }}>
-            <div style={{ flex: 1, position: 'relative' }}>
-              <textarea
-                id="group-chat-input"
-                value={input}
-                onChange={e => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                disabled={isDisabled}
-                placeholder={cooldown > 0 ? `Wait ${cooldown}s before sending...` : 'Type a message…'}
-                rows={1}
-                style={{
-                  width: '100%',
-                  padding: '11px 14px',
-                  fontSize: 14,
-                  color: 'var(--text-primary)',
-                  background: isDisabled ? '#F9FAFC' : 'var(--surface)',
-                  border: '1px solid var(--border)',
-                  borderRadius: 12,
-                  fontFamily: 'inherit',
-                  outline: 'none',
-                  resize: 'none',
-                  lineHeight: 1.5,
-                  transition: 'border-color 0.15s',
-                  opacity: isDisabled ? 0.7 : 1,
-                }}
-              />
-            </div>
-            <button
-              id="send-message-btn"
-              onClick={sendMessage}
-              disabled={isDisabled || !input.trim()}
-              style={{
-                padding: '11px 18px',
-                background: isDisabled || !input.trim() ? '#A0B8F5' : 'var(--accent)',
-                color: '#fff',
-                border: 'none',
-                borderRadius: 12,
-                fontSize: 14,
-                fontWeight: 500,
-                cursor: isDisabled || !input.trim() ? 'not-allowed' : 'pointer',
-                fontFamily: 'inherit',
-                whiteSpace: 'nowrap',
-                transition: 'background 0.15s',
-              }}
-            >
-              {cooldown > 0 ? `${cooldown}s` : 'Send'}
-            </button>
+          {/* Messages Area */}
+          <div className="hide-scrollbar" style={{
+            flex: 1,
+            overflowY: 'auto',
+            padding: '24px 16px',
+            display: 'flex',
+            flexDirection: 'column',
+            zIndex: 1,
+          }}>
+            {messages.length === 0 && (
+              <div style={{ 
+                alignSelf: 'center', 
+                background: '#FFF3CD', 
+                color: '#856404', 
+                padding: '8px 16px', 
+                borderRadius: 8, 
+                fontSize: 13,
+                marginTop: 20,
+                boxShadow: 'var(--shadow)',
+                fontWeight: 500
+              }}>
+                🔒 Messages are public. Be kind and say hello!
+              </div>
+            )}
+            {messages.map((msg, i) => {
+              const isOwn = msg.user_id === session?.user?.id;
+              return <MessageBubble key={msg.id || i} message={msg} isOwn={isOwn} />;
+            })}
+            <div ref={bottomRef} style={{ float: "left", clear: "both", paddingBottom: 10 }} />
           </div>
-          {cooldown > 0 && (
-            <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 6, textAlign: 'center' }}>
-              Cooldown active — {cooldown} second{cooldown !== 1 ? 's' : ''} remaining
-            </p>
-          )}
+
+          {/* Input Area */}
+          <div style={{ 
+            padding: '12px 16px', 
+            background: '#F0F2F5', 
+            zIndex: 10,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 8,
+            borderTop: '1px solid var(--border)'
+          }}>
+            {/* Cooldown progress bar */}
+            <div style={{
+              height: 3,
+              background: 'rgba(0,0,0,0.05)',
+              borderRadius: 3,
+              overflow: 'hidden',
+              marginBottom: 4,
+            }}>
+              <div style={{
+                height: '100%',
+                width: `${cooldownProgress}%`,
+                background: cooldown > 0 ? 'var(--accent)' : 'transparent',
+                borderRadius: 3,
+                transition: cooldown > 0 ? 'width 1s linear' : 'none',
+              }} />
+            </div>
+
+            <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end' }}>
+              <div style={{ flex: 1, position: 'relative' }}>
+                <textarea
+                  value={input}
+                  onChange={e => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  disabled={isDisabled}
+                  placeholder={cooldown > 0 ? `Wait ${cooldown}s...` : 'Type a message'}
+                  rows={1}
+                  style={{
+                    width: '100%',
+                    padding: '14px 20px',
+                    fontSize: 15,
+                    color: 'var(--text-primary)',
+                    background: isDisabled ? '#E9EDEF' : '#FFFFFF',
+                    border: 'none',
+                    borderRadius: 24,
+                    fontFamily: 'inherit',
+                    outline: 'none',
+                    resize: 'none',
+                    minHeight: 48,
+                    maxHeight: 120,
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                  }}
+                />
+              </div>
+              
+              <button
+                onClick={sendMessage}
+                disabled={isDisabled || !input.trim()}
+                style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: '50%',
+                  background: isDisabled || !input.trim() ? '#A0B8F5' : 'var(--accent)',
+                  color: '#fff',
+                  border: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: isDisabled || !input.trim() ? 'not-allowed' : 'pointer',
+                  transition: 'background 0.15s, transform 0.1s',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.15)',
+                  flexShrink: 0
+                }}
+              >
+                {cooldown > 0 ? (
+                  <span style={{ fontSize: 13, fontWeight: 700 }}>{cooldown}s</span>
+                ) : (
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" style={{ marginLeft: -2, marginTop: 2 }}>
+                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                  </svg>
+                )}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

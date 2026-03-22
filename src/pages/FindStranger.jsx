@@ -193,7 +193,7 @@ export default function FindStranger() {
 
   if (state === 'idle') {
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <Navbar />
         <div style={{
           flex: 1,
@@ -203,22 +203,29 @@ export default function FindStranger() {
           justifyContent: 'center',
           padding: 24,
           gap: 20,
+          background: 'var(--bg)',
         }}>
-          <div style={{ textAlign: 'center', maxWidth: 380 }}>
+          <div style={{ 
+            textAlign: 'center', 
+            maxWidth: 380,
+            background: 'var(--surface)',
+            padding: '40px',
+            borderRadius: 'var(--radius-xl)',
+            boxShadow: 'var(--shadow-md)',
+          }}>
             <div style={{ fontSize: 52, marginBottom: 20, lineHeight: 1 }}>🎲</div>
             <h1 style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>
-              Find a Stranger
+              Stranger Match
             </h1>
             <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 28 }}>
-              Get matched with a random person for a private one-on-one conversation. Say hi, talk about anything.
+              Get paired with a random person for a private 1-on-1 chat.
             </p>
 
             {timeoutMsg && (
               <div style={{
                 fontSize: 13,
-                color: 'var(--text-secondary)',
-                background: 'var(--surface)',
-                border: '1px solid var(--border)',
+                color: '#fff',
+                background: '#4DB6A4',
                 borderRadius: 10,
                 padding: '10px 16px',
                 marginBottom: 20,
@@ -228,22 +235,23 @@ export default function FindStranger() {
             )}
 
             <button
-              id="find-stranger-btn"
               onClick={startSearch}
               style={{
-                padding: '13px 32px',
+                width: '100%',
+                padding: '14px 24px',
                 background: 'var(--accent)',
                 color: '#fff',
                 border: 'none',
                 borderRadius: 12,
                 fontSize: 15,
-                fontWeight: 500,
+                fontWeight: 600,
                 cursor: 'pointer',
                 fontFamily: 'inherit',
-                transition: 'opacity 0.15s',
+                transition: 'background 0.15s',
+                boxShadow: 'var(--shadow-md)'
               }}
-              onMouseEnter={e => e.currentTarget.style.opacity = '0.88'}
-              onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+              onMouseEnter={e => e.currentTarget.style.background = 'var(--accent-hover)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'var(--accent)'}
             >
               Find a Stranger
             </button>
@@ -255,7 +263,7 @@ export default function FindStranger() {
 
   if (state === 'searching') {
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <Navbar />
         <div style={{
           flex: 1,
@@ -263,35 +271,43 @@ export default function FindStranger() {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: 20,
+          gap: 24,
           padding: 24,
+          background: 'var(--bg)',
         }}>
           <Spinner />
-          <div style={{ textAlign: 'center' }}>
-            <p style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 6 }}>
+          <div style={{ 
+            textAlign: 'center',
+            background: 'var(--surface)',
+            padding: '24px 40px',
+            borderRadius: 'var(--radius-xl)',
+            boxShadow: 'var(--shadow-md)', 
+          }}>
+            <p style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>
               Looking for someone…
             </p>
-            <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+            <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 24 }}>
               {searchSeconds}s elapsed · timeout in {TIMEOUT_SECS - searchSeconds}s
             </p>
+            <button
+              onClick={cancelSearch}
+              style={{
+                width: '100%',
+                padding: '10px 20px',
+                background: 'transparent',
+                color: '#E63946',
+                border: '1px solid #E63946',
+                borderRadius: 12,
+                fontSize: 14,
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                transition: 'all 0.15s',
+              }}
+            >
+              Cancel Search
+            </button>
           </div>
-          <button
-            id="cancel-search-btn"
-            onClick={cancelSearch}
-            style={{
-              padding: '8px 20px',
-              background: 'transparent',
-              color: 'var(--text-secondary)',
-              border: '1px solid var(--border)',
-              borderRadius: 8,
-              fontSize: 13,
-              fontWeight: 500,
-              cursor: 'pointer',
-              fontFamily: 'inherit',
-            }}
-          >
-            Cancel
-          </button>
         </div>
       </div>
     );
@@ -299,116 +315,150 @@ export default function FindStranger() {
 
   // Matched — private chat
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
+    <div className="page-wrapper">
       <Navbar />
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', maxWidth: 720, width: '100%', margin: '0 auto', padding: '0 16px' }}>
-        {/* Header */}
-        <div style={{
-          padding: '16px 0 12px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          borderBottom: '1px solid var(--border)',
-        }}>
-          <div>
-            <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>
-              💬 Chatting with a Stranger
-            </h2>
-            <p style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Private conversation</p>
-          </div>
-          <button
-            id="leave-chat-btn"
-            onClick={leaveChat}
-            style={{
-              padding: '6px 14px',
-              background: 'transparent',
-              color: '#E05252',
-              border: '1px solid #FFCDD2',
-              borderRadius: 8,
-              fontSize: 13,
-              fontWeight: 500,
-              cursor: 'pointer',
-              fontFamily: 'inherit',
-              transition: 'all 0.15s',
-            }}
-          >
-            Leave
-          </button>
-        </div>
+      <div className="chat-wrapper">
+        <div className="chat-container">
+          <div className="chat-bg" />
 
-        {/* Messages */}
-        <div style={{
-          flex: 1,
-          overflowY: 'auto',
-          padding: '20px 0',
-          display: 'flex',
-          flexDirection: 'column',
-          maxHeight: 'calc(100vh - 220px)',
-        }}>
-          {messages.length === 0 && (
-            <div style={{ textAlign: 'center', color: 'var(--text-secondary)', fontSize: 14, paddingTop: 48 }}>
-              ✨ You're connected! Say hello.
+          {/* Header */}
+          <div style={{
+            padding: '12px 16px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            background: '#ffffff',
+            borderBottom: '1px solid var(--border)',
+            zIndex: 10,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ 
+                width: 44, height: 44, borderRadius: '50%', backgroundColor: '#6C7EE1', 
+                display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 20
+              }}>
+                😎
+              </div>
+              <div>
+                <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>Stranger</h2>
+                <p style={{ fontSize: 13, color: 'var(--accent)' }}>Online</p>
+              </div>
             </div>
-          )}
-          {messages.map(msg => (
-            <MessageBubble
-              key={msg.id}
-              message={msg}
-              isOwn={msg.user_id === session?.user?.id}
-            />
-          ))}
-          <div ref={bottomRef} />
-        </div>
+            <button
+              onClick={leaveChat}
+              style={{
+                padding: '8px 16px',
+                background: '#FFEBEB',
+                color: '#E63946',
+                border: 'none',
+                borderRadius: 8,
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                transition: 'background 0.15s'
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = '#ffdada'}
+              onMouseLeave={e => e.currentTarget.style.background = '#FFEBEB'}
+            >
+              Leave
+            </button>
+          </div>
 
-        {/* Input */}
-        <div style={{ paddingBottom: 20 }}>
-          <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end' }}>
+          {/* Messages */}
+          <div className="hide-scrollbar" style={{
+            flex: 1,
+            overflowY: 'auto',
+            padding: '24px 16px',
+            display: 'flex',
+            flexDirection: 'column',
+            zIndex: 1,
+          }}>
+            {messages.length === 0 && (
+              <div style={{ 
+                alignSelf: 'center', 
+                background: '#FFF3CD', 
+                color: '#856404', 
+                padding: '8px 16px', 
+                borderRadius: 8, 
+                fontSize: 13,
+                marginTop: 20,
+                boxShadow: 'var(--shadow)',
+                fontWeight: 500,
+                textAlign: 'center'
+              }}>
+                🔒 You're connected! Say hello.
+              </div>
+            )}
+            {messages.map((msg, i) => {
+              const isOwn = msg.user_id === session?.user?.id;
+              return <MessageBubble key={msg.id || i} message={msg} isOwn={isOwn} />;
+            })}
+            <div ref={bottomRef} style={{ float: "left", clear: "both", paddingBottom: 10 }} />
+          </div>
+
+          {/* Input */}
+          <div style={{ 
+            padding: '12px 16px', 
+            background: '#F0F2F5', 
+            zIndex: 10,
+            display: 'flex',
+            flexDirection: 'row',
+            gap: 10,
+            alignItems: 'flex-end',
+            borderTop: '1px solid var(--border)'
+          }}>
             <textarea
-              id="private-chat-input"
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               disabled={sending}
-              placeholder="Type a message…"
+              placeholder="Type a message"
               rows={1}
               style={{
                 flex: 1,
-                padding: '11px 14px',
-                fontSize: 14,
+                padding: '14px 20px',
+                fontSize: 15,
                 color: 'var(--text-primary)',
-                background: 'var(--surface)',
-                border: '1px solid var(--border)',
-                borderRadius: 12,
+                background: '#FFFFFF',
+                border: 'none',
+                borderRadius: 24,
                 fontFamily: 'inherit',
                 outline: 'none',
                 resize: 'none',
-                lineHeight: 1.5,
+                minHeight: 48,
+                maxHeight: 120,
+                boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
               }}
             />
             <button
-              id="send-private-btn"
               onClick={sendPrivate}
               disabled={sending || !input.trim()}
               style={{
-                padding: '11px 18px',
+                width: 48,
+                height: 48,
+                borderRadius: '50%',
                 background: sending || !input.trim() ? '#A0B8F5' : 'var(--accent)',
                 color: '#fff',
                 border: 'none',
-                borderRadius: 12,
-                fontSize: 14,
-                fontWeight: 500,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
                 cursor: sending || !input.trim() ? 'not-allowed' : 'pointer',
-                fontFamily: 'inherit',
-                transition: 'background 0.15s',
+                transition: 'background 0.15s, transform 0.1s',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.15)',
+                flexShrink: 0
               }}
             >
-              Send
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" style={{ marginLeft: -2, marginTop: 2 }}>
+                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+              </svg>
             </button>
           </div>
         </div>
       </div>
     </div>
   );
+
 }
 
 function Spinner() {
