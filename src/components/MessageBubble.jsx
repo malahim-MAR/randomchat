@@ -1,10 +1,22 @@
 import Avatar from './Avatar';
+import { supabase } from '../lib/supabase';
 
-export default function MessageBubble({ message, isOwn }) {
+export default function MessageBubble({ message, isOwn, isAdmin }) {
   const time = new Date(message.created_at).toLocaleTimeString([], {
     hour: '2-digit',
     minute: '2-digit',
   });
+
+  const handleBan = async () => {
+    const confirmBan = window.confirm(`Are you sure you want to ban ${message.username}?`);
+    if (!confirmBan) return;
+    const { error } = await supabase.from('profiles').update({ is_banned: true }).eq('id', message.user_id);
+    if (error) {
+      alert('Failed to ban: ' + error.message);
+    } else {
+      alert(`${message.username} has been universally banned.`);
+    }
+  };
 
   if (isOwn) {
     return (
@@ -71,8 +83,26 @@ export default function MessageBubble({ message, isOwn }) {
           flexDirection: 'column',
         }}
       >
-        <div style={{ fontSize: 12.5, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 2, display: 'flex', justifyContent: 'space-between' }}>
+        <div style={{ fontSize: 12.5, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ color: getUsernameColor(message.username) }}>{message.username}</span>
+          {isAdmin && (
+            <button 
+              onClick={handleBan}
+              style={{
+                background: '#FFEBEB',
+                color: '#E05252',
+                border: 'none',
+                borderRadius: 4,
+                padding: '2px 6px',
+                fontSize: 10,
+                fontWeight: 600,
+                cursor: 'pointer',
+                marginLeft: 8
+              }}
+            >
+              BAN
+            </button>
+          )}
         </div>
         <div style={{ 
           fontSize: 14.2, 
@@ -110,3 +140,4 @@ function getUsernameColor(username) {
   }
   return colors[Math.abs(hash) % colors.length];
 }
+

@@ -391,7 +391,7 @@ export default function FindStranger() {
             )}
             {messages.map((msg, i) => {
               const isOwn = msg.user_id === session?.user?.id;
-              return <MessageBubble key={msg.id || i} message={msg} isOwn={isOwn} />;
+              return <MessageBubble key={msg.id || i} message={msg} isOwn={isOwn} isAdmin={profile?.is_admin} />;
             })}
             <div ref={bottomRef} style={{ float: "left", clear: "both", paddingBottom: 10 }} />
           </div>

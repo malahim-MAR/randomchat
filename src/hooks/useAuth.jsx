@@ -9,14 +9,24 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check localStorage for existing session
-    const saved = localStorage.getItem('strangerchat_mock_user');
-    if (saved) {
-      const { email, username, id } = JSON.parse(saved);
-      setSession({ user: { id, email } });
-      setProfile({ id, username, avatar_url: null });
-    }
-    setLoading(false);
+    const init = async () => {
+      const saved = localStorage.getItem('strangerchat_mock_user');
+      if (saved) {
+        const { email, username, id } = JSON.parse(saved);
+        setSession({ user: { id, email } });
+        
+        // Fetch up-to-date profile from Supabase
+        const { data } = await supabase.from('profiles').select('*').eq('id', id).maybeSingle();
+        
+        if (data) {
+          setProfile(data);
+        } else {
+          setProfile({ id, username, email, avatar_url: null });
+        }
+      }
+      setLoading(false);
+    };
+    init();
   }, []);
 
   const loginMock = async (email, username) => {
@@ -28,7 +38,7 @@ export function AuthProvider({ children }) {
     
     localStorage.setItem('strangerchat_mock_user', JSON.stringify(mockUser));
     setSession({ user: { id, email } });
-    setProfile({ id, username, avatar_url: null });
+    setProfile({ id, username, email, avatar_url: null });
   };
 
   const signOut = () => {
@@ -37,7 +47,15 @@ export function AuthProvider({ children }) {
     setProfile(null);
   };
 
-  const refreshProfile = async () => profile;
+  const refreshProfile = async () => {
+    if (!session?.user?.id) return null;
+    const { data } = await supabase.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
+    if (data) {
+      setProfile(data);
+      return data;
+    }
+    return profile;
+  };
 
   return (
     <AuthContext.Provider value={{ session, profile, loading, signOut, refreshProfile, loginMock }}>

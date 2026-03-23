@@ -17,23 +17,51 @@ export default function GroupChat() {
   const cooldownInterval = useRef(null);
   const channelRef = useRef(null);
 
-  // Load last 50 messages
+  // Community Room Tabs
+  const [activeTab, setActiveTab] = useState('intl'); // 'intl', 'country', 'gender'
+
+  // Determine active room slug based on profile
+  const getRoomSlug = () => {
+    if (!profile) return 'intl-straight'; // Fallback
+    switch (activeTab) {
+      case 'intl':
+        return `intl-${profile.community}`;
+      case 'country':
+        return `country-${profile.country}-${profile.community}`;
+      case 'gender':
+        return `gender-${profile.gender}`;
+      default:
+        return `intl-${profile.community}`;
+    }
+  };
+
+  const getRoomTitle = () => {
+    if (activeTab === 'intl') return '🌐 Global ' + (profile?.community || '');
+    if (activeTab === 'country') return `🌍 ${profile?.country} ` + (profile?.community || '');
+    return `⚧️ ${profile?.gender} Lounge`;
+  };
+
+  const activeRoomSlug = getRoomSlug();
+
+  // Load last 50 messages when room changes
   useEffect(() => {
+    setMessages([]);
     supabase
       .from('messages')
       .select('*')
+      .eq('room_slug', activeRoomSlug)
       .order('created_at', { ascending: true })
       .limit(50)
       .then(({ data }) => {
         if (data) setMessages(data);
       });
-  }, []);
+  }, [activeRoomSlug]);
 
-  // Realtime messages + Presence
+  // Realtime messages + Presence per room
   useEffect(() => {
     if (!profile) return;
 
-    const channel = supabase.channel('group-chat', {
+    const channel = supabase.channel(`room-${activeRoomSlug}`, {
       config: { presence: { key: session.user.id } },
     });
 
@@ -44,6 +72,7 @@ export default function GroupChat() {
         event: 'INSERT',
         schema: 'public',
         table: 'messages',
+        filter: `room_slug=eq.${activeRoomSlug}`
       }, (payload) => {
         setMessages(prev => {
           if (prev.find(m => m.id === payload.new.id)) return prev;
@@ -63,7 +92,7 @@ export default function GroupChat() {
     return () => {
       channel.unsubscribe();
     };
-  }, [profile, session]);
+  }, [profile, session, activeRoomSlug]);
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -98,6 +127,7 @@ export default function GroupChat() {
       username: profile.username,
       avatar_url: profile.avatar_url,
       content: text,
+      room_slug: activeRoomSlug,
     });
 
     if (error) {
@@ -127,6 +157,32 @@ export default function GroupChat() {
         <div className="chat-container">
           <div className="chat-bg" />
 
+          {/* Room Selection Tabs */}
+          <div style={{
+            display: 'flex',
+            background: 'var(--surface)',
+            borderBottom: '1px solid var(--border)',
+            padding: '8px 16px 0',
+            gap: 16,
+            zIndex: 10,
+          }}>
+            <TabButton 
+              active={activeTab === 'intl'} 
+              label="International" 
+              onClick={() => setActiveTab('intl')} 
+            />
+            <TabButton 
+              active={activeTab === 'country'} 
+              label="Country" 
+              onClick={() => setActiveTab('country')} 
+            />
+            <TabButton 
+              active={activeTab === 'gender'} 
+              label="Gender" 
+              onClick={() => setActiveTab('gender')} 
+            />
+          </div>
+
           {/* Header */}
           <div style={{
             padding: '12px 16px',
@@ -142,10 +198,12 @@ export default function GroupChat() {
                 width: 44, height: 44, borderRadius: '50%', backgroundColor: 'var(--accent)', 
                 display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 20
               }}>
-                🌍
+                {activeTab === 'intl' ? '🌐' : activeTab === 'country' ? '🌍' : '⚧️'}
               </div>
               <div>
-                <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>Global Lobby</h2>
+                <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', textTransform: 'capitalize' }}>
+                  {getRoomTitle()}
+                </h2>
                 <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
                   {onlineCount} {onlineCount === 1 ? 'participant' : 'participants'} online
                 </p>
@@ -172,14 +230,15 @@ export default function GroupChat() {
                 fontSize: 13,
                 marginTop: 20,
                 boxShadow: 'var(--shadow)',
-                fontWeight: 500
+                fontWeight: 500,
+                textAlign: 'center'
               }}>
-                🔒 Messages are public. Be kind and say hello!
+                🔒 Messages are private to your community. Say hello!
               </div>
             )}
             {messages.map((msg, i) => {
               const isOwn = msg.user_id === session?.user?.id;
-              return <MessageBubble key={msg.id || i} message={msg} isOwn={isOwn} />;
+              return <MessageBubble key={msg.id || i} message={msg} isOwn={isOwn} isAdmin={profile?.is_admin} />;
             })}
             <div ref={bottomRef} style={{ float: "left", clear: "both", paddingBottom: 10 }} />
           </div>
@@ -270,5 +329,27 @@ export default function GroupChat() {
         </div>
       </div>
     </div>
+  );
+}
+
+function TabButton({ active, label, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        padding: '10px 16px',
+        background: 'none',
+        border: 'none',
+        borderBottom: `3px solid ${active ? 'var(--accent)' : 'transparent'}`,
+        color: active ? 'var(--accent)' : 'var(--text-secondary)',
+        fontSize: 14,
+        fontWeight: 600,
+        cursor: 'pointer',
+        transition: 'all 0.15s',
+        marginBottom: -1, // cover the bottom border
+      }}
+    >
+      {label}
+    </button>
   );
 }
