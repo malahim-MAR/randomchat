@@ -1,8 +1,9 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import Avatar from './Avatar';
+import { MessageSquare, Users, LogOut } from 'lucide-react';
 
-export default function Navbar() {
+export default function Sidebar() {
   const { profile, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -16,84 +17,97 @@ export default function Navbar() {
 
   return (
     <nav style={{
-      background: 'var(--surface)',
-      borderBottom: '1px solid var(--border)',
-      boxShadow: 'var(--shadow)',
-      position: 'sticky',
+      width: 80,
+      height: '100dvh',
+      background: 'var(--color-base)',
+      borderRight: '1px solid var(--color-border)',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      padding: '24px 0',
+      position: 'fixed',
+      left: 0,
       top: 0,
       zIndex: 100,
     }}>
-      <div style={{
-        maxWidth: 960,
-        margin: '0 auto',
-        padding: '0 24px',
-        height: 56,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: 16,
+      {/* Logo */}
+      <Link to="/chat" style={{ 
+        textDecoration: 'none', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        width: 48,
+        height: 48,
+        borderRadius: 16,
+        background: 'var(--color-surface)',
+        border: '1px solid var(--color-border)',
+        color: 'var(--color-accent)',
+        marginBottom: 32,
+        transition: 'all 0.2s'
       }}>
-        {/* Logo */}
-        <Link to="/chat" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 20, lineHeight: 1 }}>◉</span>
-          <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: '-0.3px' }}>
-            StrangerChat
-          </span>
-        </Link>
+        <div style={{ fontSize: 24, lineHeight: 1, filter: 'drop-shadow(0 0 8px rgba(0,212,255,0.5))' }}>◈</div>
+      </Link>
 
-        {/* Nav Links */}
-        <div style={{ display: 'flex', gap: 4 }}>
-          <NavLink to="/chat" active={isActive('/chat')}>Group Chat</NavLink>
-          <NavLink to="/find" active={isActive('/find')}>Find Stranger</NavLink>
-        </div>
+      {/* Nav Links */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16, flex: 1 }}>
+        <SidebarLink to="/chat" active={isActive('/chat')} icon={<MessageSquare size={22} />} tooltip="Group Chat" />
+        <SidebarLink to="/find" active={isActive('/find')} icon={<Users size={22} />} tooltip="Find Stranger" />
+      </div>
 
-        {/* User Area */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <Avatar url={profile?.avatar_url} username={profile?.username} size="sm" />
-          <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>
-            {profile?.username}
-          </span>
-          <button
-            onClick={handleSignOut}
-            style={{
-              padding: '5px 12px',
-              fontSize: 12,
-              fontWeight: 500,
-              color: 'var(--text-secondary)',
-              background: 'transparent',
-              border: '1px solid var(--border)',
-              borderRadius: 6,
-              cursor: 'pointer',
-              fontFamily: 'inherit',
-              transition: 'all 0.15s',
-            }}
-            onMouseEnter={e => { e.target.style.color = 'var(--text-primary)'; e.target.style.borderColor = '#c5ccd6'; }}
-            onMouseLeave={e => { e.target.style.color = 'var(--text-secondary)'; e.target.style.borderColor = 'var(--border)'; }}
-          >
-            Sign out
-          </button>
-        </div>
+      {/* User Area */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center' }}>
+        <button
+          onClick={handleSignOut}
+          title="Sign out"
+          style={{
+            width: 48,
+            height: 48,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'var(--color-text-secondary)',
+            background: 'transparent',
+            border: 'none',
+            borderRadius: 12,
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.color = '#FF6B6B'; e.currentTarget.style.background = 'rgba(255, 107, 107, 0.1)'; }}
+          onMouseLeave={e => { e.currentTarget.style.color = 'var(--color-text-secondary)'; e.currentTarget.style.background = 'transparent'; }}
+        >
+          <LogOut size={20} />
+        </button>
+
+        <Avatar url={profile?.avatar_url} username={profile?.username} size="md" isOnline={true} />
       </div>
     </nav>
   );
 }
 
-function NavLink({ to, active, children }) {
+function SidebarLink({ to, active, icon, tooltip }) {
   return (
     <Link
       to={to}
+      title={tooltip}
       style={{
-        padding: '5px 14px',
-        fontSize: 13,
-        fontWeight: 500,
-        color: active ? 'var(--accent)' : 'var(--text-secondary)',
-        background: active ? 'var(--accent-light)' : 'transparent',
-        borderRadius: 6,
+        width: 48,
+        height: 48,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: active ? 'var(--color-accent)' : 'var(--color-text-secondary)',
+        background: active ? 'var(--color-accent-ghost)' : 'transparent',
+        borderRadius: 14,
         textDecoration: 'none',
-        transition: 'all 0.15s',
+        transition: 'all 0.2s',
+        position: 'relative',
       }}
+      className={active ? 'glow-cyan' : ''}
     >
-      {children}
+      {active && (
+        <div style={{ position: 'absolute', left: -16, width: 4, height: 24, background: 'var(--color-accent)', borderRadius: '0 4px 4px 0' }} />
+      )}
+      {icon}
     </Link>
   );
 }

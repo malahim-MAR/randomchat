@@ -1,143 +1,133 @@
+import { useState } from 'react';
 import Avatar from './Avatar';
 import { supabase } from '../lib/supabase';
+import { CheckCheck, SmilePlus } from 'lucide-react';
 
-export default function MessageBubble({ message, isOwn, isAdmin }) {
-  const time = new Date(message.created_at).toLocaleTimeString([], {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+export default function MessageBubble({ message, isOwn, isAdmin, onAvatarClick }) {
+  const [showReactions, setShowReactions] = useState(false);
+  const [reactions, setReactions] = useState([]); // Mock reactions for preview
+  const time = new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
   const handleBan = async () => {
     const confirmBan = window.confirm(`Are you sure you want to ban ${message.username}?`);
     if (!confirmBan) return;
     const { error } = await supabase.from('profiles').update({ is_banned: true }).eq('id', message.user_id);
-    if (error) {
-      alert('Failed to ban: ' + error.message);
-    } else {
-      alert(`${message.username} has been universally banned.`);
-    }
+    if (error) alert('Failed to ban: ' + error.message);
   };
 
-  if (isOwn) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8, padding: '0 8px' }}>
-        <div
-          style={{
-            maxWidth: '85%',
-            minWidth: '70px',
-            background: 'var(--accent-light)',
-            borderRadius: '8px 0px 8px 8px', /* WhatsApp tail effect on own message */
-            padding: '6px 7px 8px 9px',
-            color: 'var(--text-primary)',
-            boxShadow: 'var(--shadow)',
-            position: 'relative',
-            display: 'flex',
-            flexDirection: 'column',
-          }}
-        >
-          {/* Optional: Add a small SVG tail here if you want an exact WhatsApp replica, 
-              but the border-radius trick creates a clean, modern chat bubble look natively. */}
-          <div style={{ 
-            fontSize: 14.2, 
-            lineHeight: 1.3, 
-            wordBreak: 'break-word', 
-            paddingRight: '40px', /* space for timestamp to float right */
-            paddingBottom: '2px'
-          }}>
-            {message.content}
-          </div>
-          <div style={{ 
-            fontSize: 11, 
-            color: 'var(--text-secondary)',
-            position: 'absolute',
-            bottom: '4px',
-            right: '8px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px'
-          }}>
-            {time}
-            <svg viewBox="0 0 16 15" width="16" height="15">
-              <path fill="#53bdeb" d="M15.01 3.316l-.478-.372a.365.365 0 0 0-.51.063L8.666 9.879a.32.32 0 0 1-.484.033l-.358-.325a.319.319 0 0 0-.484.032l-.378.483a.418.418 0 0 0 .036.541l1.32 1.266c.143.14.361.125.484-.033l6.272-8.048a.366.366 0 0 0-.064-.512zm-4.1 0l-.478-.372a.365.365 0 0 0-.51.063L4.566 9.879a.32.32 0 0 1-.484.033L1.891 7.769a.366.366 0 0 0-.515.006l-.423.433a.364.364 0 0 0 .006.514l3.258 3.185c.143.14.361.125.484-.033l6.272-8.048a.365.365 0 0 0-.063-.51z"></path>
-            </svg>
-          </div>
-        </div>
-      </div>
+  const toggleReaction = (emoji) => {
+    setReactions(prev => 
+      prev.includes(emoji) ? prev.filter(e => e !== emoji) : [...prev, emoji]
     );
-  }
+    setShowReactions(false);
+  };
+
+  const reactionOptions = ['🔥', '😂', '❤️', '👀', '👍'];
 
   return (
-    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, marginBottom: 8, padding: '0 8px' }}>
-      <Avatar url={message.avatar_url} username={message.username} size="sm" />
-      <div
-        style={{
-          maxWidth: '85%',
-          minWidth: '100px',
-          background: 'var(--bubble-other)',
-          borderRadius: '0px 8px 8px 8px', /* WhatsApp tail effect on other message */
-          padding: '6px 7px 8px 9px',
-          color: 'var(--text-primary)',
-          boxShadow: 'var(--shadow)',
-          position: 'relative',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        <div style={{ fontSize: 12.5, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ color: getUsernameColor(message.username) }}>{message.username}</span>
-          {isAdmin && (
-            <button 
-              onClick={handleBan}
-              style={{
-                background: '#FFEBEB',
-                color: '#E05252',
-                border: 'none',
-                borderRadius: 4,
-                padding: '2px 6px',
-                fontSize: 10,
-                fontWeight: 600,
-                cursor: 'pointer',
-                marginLeft: 8
-              }}
-            >
-              BAN
-            </button>
-          )}
+    <div 
+      style={{ 
+        display: 'flex', 
+        justifyContent: isOwn ? 'flex-end' : 'flex-start', 
+        marginBottom: 16, 
+        padding: '0 24px',
+        position: 'relative'
+      }}
+      onMouseEnter={() => setShowReactions(true)}
+      onMouseLeave={() => setShowReactions(false)}
+    >
+      {!isOwn && (
+        <div style={{ marginRight: 12, marginTop: 4 }}>
+          <Avatar 
+            url={message.avatar_url} 
+            username={message.username} 
+            size="sm" 
+            onClick={() => onAvatarClick(message)}
+          />
         </div>
-        <div style={{ 
-          fontSize: 14.2, 
-          lineHeight: 1.3, 
-          wordBreak: 'break-word',
-          paddingRight: '36px',
-        }}>
-          {message.content}
+      )}
+
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: isOwn ? 'flex-end' : 'flex-start', maxWidth: '75%', position: 'relative' }}>
+        
+        {!isOwn && (
+          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span onClick={() => onAvatarClick(message)} style={{ cursor: 'pointer', transition: 'color 0.15s' }} onMouseEnter={e => e.target.style.color='var(--color-accent)'} onMouseLeave={e => e.target.style.color='var(--color-text-secondary)'}>
+              {message.username}
+            </span>
+            {isAdmin && (
+              <button onClick={handleBan} style={{ background: 'rgba(255,107,107,0.1)', color: '#FF6B6B', border: 'none', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer' }}>
+                BAN
+              </button>
+            )}
+          </div>
+        )}
+
+        <div
+          style={{
+            background: isOwn ? 'rgba(0, 212, 255, 0.15)' : 'var(--color-surface)',
+            border: `1px solid ${isOwn ? 'rgba(0, 212, 255, 0.3)' : 'var(--color-border)'}`,
+            borderRadius: isOwn ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
+            padding: '10px 14px',
+            color: 'var(--color-text-primary)',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+            minWidth: 80,
+            backdropFilter: 'blur(16px)',
+            position: 'relative',
+          }}
+        >
+          <div style={{ fontSize: 15, lineHeight: 1.4, wordBreak: 'break-word', color: isOwn ? '#fff' : 'var(--color-text-primary)' }}>
+            {message.content}
+          </div>
+          
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 6, marginTop: 4 }}>
+            <span style={{ fontSize: 11, color: isOwn ? 'rgba(255,255,255,0.6)' : 'var(--color-text-muted)' }}>{time}</span>
+            {isOwn && <CheckCheck size={14} color="var(--color-accent)" strokeWidth={2.5} />}
+          </div>
         </div>
-        <div style={{ 
-          fontSize: 11, 
-          color: 'var(--text-secondary)',
+
+        {/* Reaction Chips Below Bubble */}
+        {reactions.length > 0 && (
+          <div style={{
+            display: 'flex', gap: 4, marginTop: -8, zIndex: 2, background: 'var(--color-base)', padding: '2px', borderRadius: 12, border: '1px solid var(--color-border)'
+          }}>
+            {reactions.map((r, i) => (
+               <span key={i} style={{ fontSize: 12, background: 'var(--color-surface)', padding: '2px 6px', borderRadius: 10, cursor: 'pointer' }} onClick={() => toggleReaction(r)}>
+                 {r}
+               </span>
+            ))}
+          </div>
+        )}
+
+        {/* Hover Emoji Tray */}
+        <div style={{
           position: 'absolute',
-          bottom: '4px',
-          right: '8px',
+          [isOwn ? 'right' : 'left']: isOwn ? 'calc(100% + 8px)' : 'calc(100% + 8px)',
+          top: 0,
+          background: 'var(--color-surface)',
+          border: '1px solid var(--color-border)',
+          borderRadius: 24,
+          padding: '4px',
+          display: 'flex',
+          gap: 2,
+          opacity: showReactions ? 1 : 0,
+          visibility: showReactions ? 'visible' : 'hidden',
+          transition: 'all 0.2s cubic-bezier(0.19, 1, 0.22, 1)',
+          transform: showReactions ? 'translateY(0) scale(1)' : 'translateY(10px) scale(0.9)',
+          backdropFilter: 'blur(16px)',
+          zIndex: 10,
         }}>
-          {time}
+          {reactionOptions.map(r => (
+            <button key={r} onClick={() => toggleReaction(r)} style={{
+              background: 'transparent', border: 'none', fontSize: 16, cursor: 'pointer', padding: '4px 8px', borderRadius: '50%', transition: 'transform 0.1s'
+            }}
+             onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.3)'}
+             onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+            >
+              {r}
+            </button>
+          ))}
         </div>
       </div>
     </div>
   );
 }
-
-// WhatsApp gives each user a deterministic color in group chats
-function getUsernameColor(username) {
-  const colors = [
-    '#35CD96', '#6BCB77', '#FF6B6B', '#4D96FF', 
-    '#9D4EDD', '#F9A826', '#FF9F1C', '#E63946',
-    '#118AB2', '#06D6A0'
-  ];
-  if (!username) return colors[0];
-  let hash = 0;
-  for (let i = 0; i < username.length; i++) {
-    hash = username.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return colors[Math.abs(hash) % colors.length];
-}
-

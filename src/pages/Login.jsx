@@ -30,32 +30,38 @@ export default function Login() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'var(--bg)',
+      background: 'var(--color-base)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       padding: 24,
     }}>
-      <div style={{
+      <div className="glass-panel slide-in" style={{
         width: '100%',
         maxWidth: 400,
-        background: 'var(--surface)',
-        border: '1px solid var(--border)',
-        borderRadius: 'var(--radius-xl)',
-        padding: '40px 36px',
-        boxShadow: 'var(--shadow-md)',
+        borderRadius: 24,
+        padding: '48px 40px',
+        boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
       }}>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div style={{ fontSize: 32, marginBottom: 10 }}>◉</div>
-          <h1 style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>
+          <div style={{ 
+            fontSize: 28, 
+            lineHeight: 1, 
+            color: 'var(--color-accent)', 
+            marginBottom: 16,
+            filter: 'drop-shadow(0 0 10px rgba(0,212,255,0.5))'
+          }}>
+            ◈
+          </div>
+          <h1 className="text-gradient" style={{ fontSize: 26, fontWeight: 700, margin: '0 0 8px' }}>
             StrangerChat
           </h1>
-          <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-            Join the conversation.
+          <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', margin: 0 }}>
+            Enter the void.
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div>
             <label style={labelStyle}>Username</label>
             <input
@@ -64,6 +70,8 @@ export default function Login() {
               onChange={e => setUsername(e.target.value)}
               placeholder="choose a handle"
               style={inputStyle}
+              onFocus={e => e.currentTarget.style.borderColor = 'var(--color-accent)'}
+              onBlur={e => e.currentTarget.style.borderColor = 'var(--color-border)'}
             />
           </div>
           <div>
@@ -74,6 +82,8 @@ export default function Login() {
               onChange={e => setEmail(e.target.value)}
               placeholder="you@example.com"
               style={inputStyle}
+              onFocus={e => e.currentTarget.style.borderColor = 'var(--color-accent)'}
+              onBlur={e => e.currentTarget.style.borderColor = 'var(--color-border)'}
             />
           </div>
           <div>
@@ -84,34 +94,39 @@ export default function Login() {
               onChange={e => setPassword(e.target.value)}
               placeholder="••••••••"
               style={inputStyle}
+              onFocus={e => e.currentTarget.style.borderColor = 'var(--color-accent)'}
+              onBlur={e => e.currentTarget.style.borderColor = 'var(--color-border)'}
             />
           </div>
 
           {error && (
-            <div style={{ fontSize: 13, color: '#E05252', background: '#FFF0F0', border: '1px solid #FFCDD2', borderRadius: 8, padding: '8px 12px' }}>
+            <div style={{ fontSize: 13, color: '#FF6B6B', background: 'rgba(255, 107, 107, 0.1)', border: '1px solid rgba(255, 107, 107, 0.3)', borderRadius: 12, padding: '12px 16px', marginTop: 8 }}>
               {error}
             </div>
           )}
 
           <button
-            type="submit"
-            disabled={loading}
-            style={{
-              width: '100%',
-              padding: '11px 16px',
-              background: loading ? '#A0B8F5' : 'var(--accent)',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 10,
-              fontSize: 14,
-              fontWeight: 500,
-              cursor: loading ? 'not-allowed' : 'pointer',
-              fontFamily: 'inherit',
-              transition: 'background 0.15s',
-              marginTop: 4,
-            }}
+             type="submit"
+             disabled={loading}
+             style={{
+               width: '100%',
+               padding: '14px 16px',
+               background: loading ? 'var(--color-surface)' : 'var(--color-accent)',
+               color: loading ? 'rgba(255,255,255,0.5)' : '#000',
+               border: 'none',
+               borderRadius: 14,
+               fontSize: 16,
+               fontWeight: 700,
+               cursor: loading ? 'not-allowed' : 'pointer',
+               fontFamily: 'inherit',
+               transition: 'all 0.2s',
+               boxShadow: loading ? 'none' : '0 0 15px rgba(0, 212, 255, 0.4)',
+               marginTop: 12,
+             }}
+             onMouseEnter={e => { if(!loading) e.currentTarget.style.transform = 'scale(1.02)'; }}
+             onMouseLeave={e => { if(!loading) e.currentTarget.style.transform = 'scale(1)'; }}
           >
-            {loading ? 'Joining...' : 'Get Started'}
+            {loading ? 'Authenticating...' : 'Get Started'}
           </button>
         </form>
       </div>
@@ -120,22 +135,23 @@ export default function Login() {
 }
 
 const labelStyle = { 
-  fontSize: 12, 
-  fontWeight: 500, 
-  color: 'var(--text-secondary)', 
+  fontSize: 13, 
+  fontWeight: 600, 
+  color: 'var(--color-text-secondary)', 
   display: 'block', 
-  marginBottom: 6 
+  marginBottom: 8,
+  fontFamily: 'var(--font-display)' 
 };
 
 const inputStyle = {
   width: '100%',
-  padding: '9px 12px',
-  fontSize: 14,
-  color: 'var(--text-primary)',
-  background: 'var(--bg)',
-  border: '1px solid var(--border)',
-  borderRadius: 8,
+  padding: '14px 16px',
+  fontSize: 15,
+  color: '#fff',
+  background: 'rgba(0,0,0,0.2)',
+  border: '1px solid var(--color-border)',
+  borderRadius: 14,
   fontFamily: 'inherit',
   outline: 'none',
-  transition: 'border-color 0.15s',
+  transition: 'border-color 0.2s, box-shadow 0.2s',
 };
